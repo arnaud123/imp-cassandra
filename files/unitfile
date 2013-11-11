@@ -1,0 +1,14 @@
+[Unit]
+Description=Cassandra NoSQL database
+After=syslog.target
+
+[Service]
+Type=forking
+PIDFile=/run/cassandra/cassandra.pid
+User=cassandra
+Group=cassandra
+ExecStart=/usr/sbin/cassandra -p /run/cassandra/cassandra.pid
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,63 @@
+"""
+    Copyright 2013 KU Leuven Research and Development - iMinds - Distrinet
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    Administrative Contact: dnet-project-office@cs.kuleuven.be
+    Technical Contact: bart.vanbrabant@cs.kuleuven.be
+"""
+
+entity Cluster:
+    """
+        A cassandra cluster consisting of multiple servers
+
+        :param name A symbolic name of the cluster
+    """
+    string name
+end
+
+entity Cassandra extends ip::services::Server, java::JavaServer:
+    """
+        Configure one cassandra server
+    """
+end
+
+Cluster cluster [0:1] -- [1:] Cassandra servers
+
+implementation cassandraServer:
+    # Install package
+    repo = yum::Repository(name = "datastax", baseurl = "http://rpm.datastax.com/community", host = self.host)
+    pkg = std::Package(name = "cassandra20", state = "installed", requires = repo, host = self.host)
+    # Set config files
+    config = std::ConfigFile(path = "/etc/cassandra/conf/cassandra.yaml",
+                content = template("cassandra/cassandra2.yaml.tmpl"), host = self.host, requires = pkg, reload = true)
+    env = std::ConfigFile(path = "/etc/cassandra/conf/cassandra-env.sh",
+                content = file("cassandra/cassandra-env.sh"), host = self.host, requires = pkg)
+    # Create unit file for cassandra service
+    unit_file = std::ConfigFile(host = host, path = "/lib/systemd/system/cassandra.service", content = file("cassandra/unitfile"),
+	requires = init_file)
+    # Purge cassandras init file
+    init_file = std::ConfigFile(host = host, path = "/etc/rc.d/init.d/cassandra",  purged = true, content = "", requires = pkg)
+    # Create tmp file entry
+    tmp_file = std::ConfigFile(host = host, path = "/usr/lib/tmpfiles.d/cassandra.conf", content = file("cassandra/tmpfiles"), 
+	reload = true, requires = pkg)
+    # Configure cassandra as service
+    svc = std::Service(name = "cassandra", state = "running", onboot = true, requires = [pkg, config, unit_file, tmp_file, env], 
+	host = self.host)
+    # create the tmp files entry
+    std::Service(host = host, name = "systemd-tmpfiles-setup", state = "running",
+        onboot = "true", requires = tmp_file)
+end
+
+implement Cassandra using cassandraServer
+implement Cluster   using std::none

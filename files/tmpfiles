@@ -1,0 +1,2 @@
+d /run/cassandra 0755 cassandra cassandra -
+

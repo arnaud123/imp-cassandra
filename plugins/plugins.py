@@ -25,5 +25,4 @@ def seeds(cluster : "cassandra::Cluster") -> "list":
         Finds ALL cassandra nodes in the network, sorts them by IP 
 	and returns them.
     """
-    ips = sorted([node.host.ip for node in cluster.servers]);
-    return ips;
+    return sorted([node.host.ip for node in cluster.servers]);

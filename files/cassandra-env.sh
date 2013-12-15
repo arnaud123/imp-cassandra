@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+[ -r /etc/cassandra/conf/jmx_opts.sh ] && . /etc/cassandra/conf/jmx_opts.sh
+
 calculate_heap_sizes()
 {
     case "`uname`" in
@@ -129,12 +131,8 @@ esac
 # times. If in doubt, and if you do not particularly want to tweak, go with
 # 100 MB per physical CPU core.
 
-#MAX_HEAP_SIZE="4G"
-#HEAP_NEWSIZE="800M"
-
-# Set this to control the amount of arenas per-thread in glibc
-#MALLOC_ARENA_MAX=4
-
+MAX_HEAP_SIZE="1G"
+HEAP_NEWSIZE="200M"
 
 if [ "x$MAX_HEAP_SIZE" = "x" ] && [ "x$HEAP_NEWSIZE" = "x" ]; then
     calculate_heap_sizes
@@ -143,11 +141,6 @@ else
         echo "please set or unset MAX_HEAP_SIZE and HEAP_NEWSIZE in pairs (see cassandra-env.sh)"
         exit 1
     fi
-fi
-
-if [ "x$MALLOC_ARENA_MAX" = "x" ]
-then
-    MALLOC_ARENA_MAX=4
 fi
 
 # Specifies the default port over which Cassandra will be available for
@@ -193,9 +186,14 @@ fi
 
 startswith() { [ "${1#$2}" != "$1" ]; }
 
-# Per-thread stack size.
-JVM_OPTS="$JVM_OPTS -Xss256k"
-
+if [ "`uname`" = "Linux" ] ; then
+    # reduce the per-thread stack size to minimize the impact of Thrift
+    # thread-per-client.  (Best practice is for client connections to
+    # be pooled anyway.) Only do so on Linux where it is known to be
+    # supported.
+    # u34 and greater need 180k
+    JVM_OPTS="$JVM_OPTS -Xss250k"
+fi
 echo "xss = $JVM_OPTS"
 
 # GC tuning options
@@ -231,7 +229,7 @@ fi
 # Configure the following for JEMallocAllocator and if jemalloc is not available in the system 
 # library path (Example: /usr/local/lib/). Usually "make install" will do the right thing. 
 # export LD_LIBRARY_PATH=<JEMALLOC_HOME>/lib/
-# JVM_OPTS="$JVM_OPTS -Djava.library.path=<JEMALLOC_HOME>/lib/"
+# JVM_OPTS="-Djava.library.path=<JEMALLOC_HOME>/lib/"
 
 # uncomment to have Cassandra JVM listen for remote debuggers/profilers on port 1414
 # JVM_OPTS="$JVM_OPTS -Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1414"

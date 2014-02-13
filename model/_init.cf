@@ -40,9 +40,11 @@ implementation cassandraServer:
     pkg = std::Package(name = "cassandra20", state = "installed", requires = repo, host = self.host)
     # Set config files
     config = std::ConfigFile(path = "/etc/cassandra/conf/cassandra.yaml",
-                content = template("cassandra/cassandra2.yaml.tmpl"), host = self.host, requires = pkg, reload = true)
+                content = template("cassandra/cassandra2.yaml.tmpl"), host = self.host, requires = pkg, reload = true,
+		mode=755, owner="cassandra", group="cassandra")
     env = std::ConfigFile(path = "/etc/cassandra/conf/cassandra-env.sh",
-                content = file("cassandra/cassandra-env.sh"), host = self.host, requires = pkg)
+                content = template("cassandra/cassandra-env.sh.tmpl"), host = self.host, requires = pkg, reload = true,
+		mode=755, owner="cassandra", group="cassandra")
     # Create unit file for cassandra service
     unit_file = std::ConfigFile(host = host, path = "/lib/systemd/system/cassandra.service", content = file("cassandra/unitfile"),
 	requires = init_file)

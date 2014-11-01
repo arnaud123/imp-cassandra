@@ -36,6 +36,7 @@ Cluster cluster [0:1] -- [1:] Cassandra servers
 
 implementation cassandraServer:
     # Install package
+    java = std::Package(host = self.host, name = "java-1.7.0-openjdk", state = "installed")
     repo = yum::Repository(name = "datastax", baseurl = "http://rpm.datastax.com/community", host = self.host)
     pkg = std::Package(name = "cassandra21", state = "installed", requires = repo, host = self.host)
     # Set config files
@@ -54,7 +55,7 @@ implementation cassandraServer:
     tmp_file = std::ConfigFile(host = host, path = "/usr/lib/tmpfiles.d/cassandra.conf", content = file("cassandra/tmpfiles"), 
 	reload = true, requires = pkg)
     # Configure cassandra as service
-    svc = std::Service(name = "cassandra", state = "running", onboot = true, requires = [pkg, config, unit_file, tmp_file, env], 
+    svc = std::Service(name = "cassandra", state = "running", onboot = true, requires = [java,pkg, config, unit_file, tmp_file, env], 
 	host = self.host)
     # create the tmp files entry
     std::Service(host = host, name = "systemd-tmpfiles-setup", state = "running",

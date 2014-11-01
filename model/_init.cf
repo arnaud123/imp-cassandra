@@ -37,7 +37,7 @@ Cluster cluster [0:1] -- [1:] Cassandra servers
 implementation cassandraServer:
     # Install package
     repo = yum::Repository(name = "datastax", baseurl = "http://rpm.datastax.com/community", host = self.host)
-    pkg = std::Package(name = "cassandra20", state = "installed", requires = repo, host = self.host)
+    pkg = std::Package(name = "cassandra21", state = "installed", requires = repo, host = self.host)
     # Set config files
     config = std::ConfigFile(path = "/etc/cassandra/conf/cassandra.yaml",
                 content = template("cassandra/cassandra2.yaml.tmpl"), host = self.host, requires = pkg, reload = true,

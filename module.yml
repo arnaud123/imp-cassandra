@@ -1,4 +1,4 @@
-name: imp-cassandra
+name: cassandra
 license: Apache 2.0
 author: Arnaud Schoonjans
 source: git@github.com:arnaudsjs/imp-cassandra

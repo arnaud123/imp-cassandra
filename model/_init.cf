@@ -26,7 +26,7 @@ entity Cluster:
     string name
 end
 
-entity Cassandra extends ip::services::Server, java::JavaServer:
+entity Cassandra extends ip::services::Server:
     """
         Configure one cassandra server
     """

@@ -34,25 +34,25 @@ end
 
 Cluster cluster [0:1] -- [1:] Cassandra servers
 
-implementation cassandraServer:
+implementation cassandraServer for Cassandra:
     # Install package
     java = std::Package(host = self.host, name = "java-1.7.0-openjdk", state = "installed")
     repo = yum::Repository(name = "datastax", baseurl = "http://rpm.datastax.com/community", host = self.host)
     pkg = std::Package(name = "cassandra21", state = "installed", requires = repo, host = self.host)
     # Set config files
     config = std::ConfigFile(path = "/etc/cassandra/conf/cassandra.yaml",
-                content = template("cassandra/cassandra2.yaml.tmpl"), host = self.host, requires = pkg, reload = true,
+                content = std::template("cassandra/cassandra2.yaml.tmpl"), host = self.host, requires = pkg, reload = true,
 		mode=755, owner="cassandra", group="cassandra")
     env = std::ConfigFile(path = "/etc/cassandra/conf/cassandra-env.sh",
-                content = template("cassandra/cassandra-env.sh.tmpl"), host = self.host, requires = pkg, reload = true,
+                content = std::template("cassandra/cassandra-env.sh.tmpl"), host = self.host, requires = pkg, reload = true,
 		mode=755, owner="cassandra", group="cassandra")
     # Create unit file for cassandra service
-    unit_file = std::ConfigFile(host = host, path = "/lib/systemd/system/cassandra.service", content = file("cassandra/unitfile"),
+    unit_file = std::ConfigFile(host = host, path = "/lib/systemd/system/cassandra.service", content = std::file("cassandra/unitfile"),
 	requires = init_file)
     # Purge cassandras init file
     init_file = std::ConfigFile(host = host, path = "/etc/rc.d/init.d/cassandra",  purged = true, content = "", requires = pkg)
     # Create tmp file entry
-    tmp_file = std::ConfigFile(host = host, path = "/usr/lib/tmpfiles.d/cassandra.conf", content = file("cassandra/tmpfiles"), 
+    tmp_file = std::ConfigFile(host = host, path = "/usr/lib/tmpfiles.d/cassandra.conf", content = std::file("cassandra/tmpfiles"), 
 	reload = true, requires = pkg)
     # Configure cassandra as service
     svc = std::Service(name = "cassandra", state = "running", onboot = true, requires = [java,pkg, config, unit_file, tmp_file, env], 

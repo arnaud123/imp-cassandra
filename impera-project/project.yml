@@ -1,0 +1,12 @@
+name: cassandra
+modulepath: libs
+downloadpath: libs
+description: deploy cassandra cluster
+requires:
+    std: git@github.com:impera-io/std, ">= 0.1"
+    net: git@github.com:impera-io/net, ">= 0.1"
+    ip: git@github.com:impera-io/ip, ">= 0.1"
+    redhat: git@github.com:impera-io/redhat, ">= 0.1"
+    yum: git@github.com:impera-io/yum, ">= 0.1"
+    imp-cassandra: git@github.com:arnaudsjs/imp-cassandra, ">= 0.1"
+
